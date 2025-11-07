@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="copyright" content="© 2025 Sebastian Wisła">
+    <meta name="license" content="CC BY-NC 4.0">
+    <meta name="robots" content="noai, noimageai">
+    <title>Matching Game - AI Act: Key Concepts and Definitions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .game-area {
+            display: flex;
+            gap: 30px;
+            padding: 30px;
+            min-height: 600px;
+        }
+
+        .definitions, .explanations {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .definitions h2, .explanations h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-size: 1.3rem;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .item {
+            background: white;
+            margin: 10px 0;
+            padding: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+        }
+
+        .item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            border-color: #3498db;
+        }
+
+        .item.selected {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+        }
+
+        .item.matched {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+            border-color: #27ae60;
+            cursor: default;
+        }
+
+        .item.wrong {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .number {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-right: 8px;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .item.selected .number,
+        .item.matched .number,
+        .item.wrong .number {
+            color: white;
+        }
+
+        .info-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 18px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 5px;
+            cursor: help;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .item.selected .info-icon,
+        .item.matched .info-icon,
+        .item.wrong .info-icon {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .tooltip {
+            visibility: hidden;
+            position: absolute;
+            background-color: #2c3e50;
+            color: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            width: 300px;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -8px;
+            border-width: 8px;
+            border-style: solid;
+            border-color: #2c3e50 transparent transparent transparent;
+        }
+
+        .info-icon:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .tooltip strong {
+            color: #3498db;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .controls {
+            text-align: center;
+            padding: 20px 30px;
+            background: #ecf0f1;
+            border-top: 1px solid #bdc3c7;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .score {
+            background: white;
+            margin: 20px 30px;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .score-item {
+            display: inline-block;
+            margin: 0 20px;
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            color: white;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .answer-key {
+            background: white;
+            margin: 20px 30px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            display: none;
+        }
+
+        .answer-key h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .answer-pair {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 15px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+            font-size: 0.9rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 600px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            animation: slideDown 0.4s ease;
+            position: relative;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 20px;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .modal-content h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .modal-content p {
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .modal-content strong {
+            color: #2c3e50;
+        }
+
+        .modal-content a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .modal-content a:hover {
+            text-decoration: underline;
+        }
+
+        .linkedin-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #0077b5;
+            color: white !important;
+            border-radius: 8px;
+            text-decoration: none !important;
+            transition: all 0.3s ease;
+        }
+
+        .linkedin-link:hover {
+            background: #005885;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 119, 181, 0.3);
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.85em;
+            color: #666;
+            padding: 30px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .item {
+                padding: 12px;
+                font-size: 0.9rem;
+            }
+
+            .modal-content {
+                margin: 10% auto;
+                padding: 20px;
+                max-width: 90%;
+            }
+
+            .btn {
+                margin: 5px;
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+
+            .tooltip {
+                width: 250px;
+                font-size: 0.8rem;
+            }
+
+            .answer-pair {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="text-align: right; padding: 10px;">
+                <a href="pl.html" style="text-decoration: none; font-size: 24px; color: white;">pl</a> <span style="color: white;">|</span> 
+                <a href="index.html" style="text-decoration: none; font-size: 24px; color: white;">en</a> <span style="color: white;">|</span> 
+                <a href="fr.html" style="text-decoration: none; font-size: 24px; color: white;">fr</a>
+            </div>
+            <h1>⚖️ AI Act: Key Concepts</h1>
+            <p>Match the terms with their corresponding definitions</p>
+        </div>
+
+        <div class="score">
+            <div class="score-item">
+                Matched: <span id="matched">0</span>/10
+            </div>
+            <div class="score-item">
+                Attempts: <span id="attempts">0</span>
+            </div>
+            <div class="score-item">
+                Points: <span id="points">0</span>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <div class="definitions">
+                <h2>📋 Concepts</h2>
+                <div class="item" data-id="1">
+                    <span class="number">1.</span> Low-risk AI systems
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Art. 50 AI Act</strong>Applies from August 2, 2026</span>
+                    </span>
+                </div>
+                <div class="item" data-id="2">
+                    <span class="number">2.</span> Chatbot disclosure obligation
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Art. 50 AI Act</strong>Applies from August 2, 2026</span>
+                    </span>
+                </div>
+                <div class="item" data-id="3">
+                    <span class="number">3.</span> AI-generated content labeling
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Art. 50 AI Act</strong>Applies from August 2, 2026</span>
+                    </span>
+                </div>
+                <div class="item" data-id="4">
+                    <span class="number">4.</span> Synthetic media detection
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Art. 50 AI Act</strong>Applies from August 2, 2026</span>
+                    </span>
+                </div>
+                <div class="item" data-id="5">
+                    <span class="number">5.</span> General Purpose AI (GPAI) models
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Art. 3(63) AI Act</strong>Provider obligations from August 2, 2025 (earlier deadline!)</span>
+                    </span>
+                </div>
+                <div class="item" data-id="6">
+                    <span class="number">6.</span> Acceptable Use Policy (AUP)
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Best practice</strong>AI Act does not formally require AUP, but it is recommended for risk management</span>
+                    </span>
+                </div>
+                <div class="item" data-id="7">
+                    <span class="number">7.</span> AI vendor due diligence
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Risk management</strong>Derives from diligence and documentation requirements in AI Act</span>
+                    </span>
+                </div>
+                <div class="item" data-id="8">
+                    <span class="number">8.</span> Copyright compliance in AI content
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Art. 53 AI Act + copyright law</strong>Training data transparency for GPAI from August 2, 2025</span>
+                    </span>
+                </div>
+                <div class="item" data-id="9">
+                    <span class="number">9.</span> AI literacy training for employees
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Best practice</strong>Promoted by AI Act as part of risk management</span>
+                    </span>
+                </div>
+                <div class="item" data-id="10">
+                    <span class="number">10.</span> Internal AI inventory
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Recommendation</strong>Not mandatory, but strongly recommended for compliance and auditability</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="explanations">
+                <h2>💡 Definitions</h2>
+                <div id="explanationsContainer">
+                    <!-- Definitions will be inserted here by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="resetGame()">🔄 Start Over</button>
+            <button class="btn" onclick="showAnswers()">📖 Show Answers</button>
+            <button class="btn" onclick="showAuthorInfo()">👤 About Author</button>
+        </div>
+
+        <div class="answer-key" id="answerKey">
+            <h3>🔑 Answer Key</h3>
+            <div class="answer-pair"><span><strong>1. Low-risk AI systems</strong></span><span><strong>F.</strong> Artificial intelligence systems that are not classified as high-risk...</span></div>
+            <div class="answer-pair"><span><strong>2. Chatbot disclosure obligation</strong></span><span><strong>H.</strong> Requirement to inform users they are interacting with an AI system...</span></div>
+            <div class="answer-pair"><span><strong>3. AI-generated content labeling</strong></span><span><strong>J.</strong> Requirement for clear and visible marking of text, images...</span></div>
+            <div class="answer-pair"><span><strong>4. Synthetic media detection</strong></span><span><strong>B.</strong> Technical and organizational measures aimed at detecting...</span></div>
+            <div class="answer-pair"><span><strong>5. General Purpose AI (GPAI) models</strong></span><span><strong>D.</strong> Large language models and similar systems (e.g., ChatGPT, Gemini)...</span></div>
+            <div class="answer-pair"><span><strong>6. Acceptable Use Policy (AUP)</strong></span><span><strong>I.</strong> Recommended internal document defining permitted and prohibited ways...</span></div>
+            <div class="answer-pair"><span><strong>7. AI vendor due diligence</strong></span><span><strong>A.</strong> Process of evaluating AI vendors/models (documentation, compliance...)...</span></div>
+            <div class="answer-pair"><span><strong>8. Copyright compliance in AI content</strong></span><span><strong>G.</strong> Obligation to verify that the use of training data...</span></div>
+            <div class="answer-pair"><span><strong>9. AI literacy training for employees</strong></span><span><strong>E.</strong> Regular training covering AI system limitations...</span></div>
+            <div class="answer-pair"><span><strong>10. Internal AI inventory</strong></span><span><strong>C.</strong> Internal documentation describing all AI systems used...</span></div>
+        </div>
+
+        <!-- Author Modal -->
+        <div id="authorModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeAuthorModal()">&times;</span>
+                <h2>👤 About the Author</h2>
+                <p><strong>Sebastian Wisła</strong></p>
+                <p>This material is available under the <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)</a> license.</p>
+                <p><strong>Concept and development:</strong> Sebastian Wisła<br>
+                <strong>AI assistance:</strong> Claude Sonnet 4.5</p>
+                <a href="https://www.linkedin.com/in/erpandcrm/" target="_blank" class="linkedin-link">
+                    🔗 LinkedIn Profile
+                </a>
+            </div>
+        </div>
+
+        <footer>
+            © 2025 Sebastian Wisła. This material is available under the 
+            <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)</a> license.<br>
+            Concept and development: <strong>Sebastian Wisła</strong> | AI assistance: Claude Sonnet 4.5
+        </footer>
+    </div>
+
+    <script>
+        // Correct answers
+        const correctAnswers = {
+            '1': 'F',
+            '2': 'H', 
+            '3': 'J',
+            '4': 'B',
+            '5': 'D',
+            '6': 'I',
+            '7': 'A',
+            '8': 'G',
+            '9': 'E',
+            '10': 'C'
+        };
+
+        // Definitions to shuffle
+        const explanationsData = [
+            { id: 'F', text: 'Artificial intelligence systems that are not classified as high-risk (non-high-risk) and that interact with users or generate content (e.g., customer service chatbots, marketing text generators).' },
+            { id: 'H', text: 'Requirement to inform users they are interacting with an AI system (unless it is obvious). Also applies to emotion recognition/biometric systems and certain synthetic content.' },
+            { id: 'J', text: 'Requirement for clear and visible marking of text, images, audio, or video created or significantly modified by AI, especially where content could be mistaken for authentic.' },
+            { id: 'B', text: 'Technical and organizational measures aimed at detecting, marking, and managing risks related to manipulated or AI-generated materials (metadata, watermarks, verification processes).' },
+            { id: 'D', text: 'Large language models and similar systems (e.g., ChatGPT, Gemini) whose functions are not limited to a single task. Provider obligations come into effect from August 2, 2025.' },
+            { id: 'I', text: 'Recommended internal document defining permitted and prohibited ways of using AI systems by employees. The AI Act does not formally require this, but it is good practice for risk management.' },
+            { id: 'A', text: 'Process of evaluating AI vendors/models (documentation, compliance, absence of prohibited functions). Practice derived from due diligence principles in risk management, especially for higher-risk systems and GPAI.' },
+            { id: 'G', text: 'Obligation to verify that the use of training data or generated content does not infringe copyrights. Governed both by copyright law and AI Act transparency requirements.' },
+            { id: 'E', text: 'Regular training covering AI system limitations, risks (e.g., hallucinations), required human oversight, and security and privacy principles. Element of good risk management practice.' },
+            { id: 'C', text: 'Internal documentation describing all AI systems used (vendor, version, purpose, risk categories, deployment date). Strongly recommended for compliance and auditability purposes.' }
+        ];
+
+        let selectedDefinition = null;
+        let selectedExplanation = null;
+        let matched = 0;
+        let attempts = 0;
+        let points = 100;
+
+        // Fisher-Yates shuffle function
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Function to generate definitions in random order
+        function generateExplanations() {
+            const container = document.getElementById('explanationsContainer');
+            container.innerHTML = '';
+            
+            const shuffled = shuffleArray(explanationsData);
+            
+            shuffled.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.dataset.id = item.id;
+                div.innerHTML = `<span class="number">${item.id}.</span> ${item.text}`;
+                container.appendChild(div);
+            });
+        }
+
+        // Game initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            generateExplanations();
+            addEventListeners();
+            updateScore();
+        });
+
+        function addEventListeners() {
+            // Definitions
+            document.querySelectorAll('.definitions .item').forEach(item => {
+                item.addEventListener('click', function() {
+                    if (this.classList.contains('matched')) return;
+                    
+                    // Remove previous selection from definitions
+                    document.querySelectorAll('.definitions .item').forEach(el => 
+                        el.classList.remove('selected'));
+                    
+                    this.classList.add('selected');
+                    selectedDefinition = this.dataset.id;
+                    
+                    checkForMatch();
+                });
+            });
+
+            // Explanations
+            document.querySelectorAll('.explanations .item').forEach(item => {
+                item.addEventListener('click', function() {
+                    if (this.classList.contains('matched')) return;
+                    
+                    // Remove previous selection from explanations
+                    document.querySelectorAll('.explanations .item').forEach(el => 
+                        el.classList.remove('selected'));
+                    
+                    this.classList.add('selected');
+                    selectedExplanation = this.dataset.id;
+                    
+                    checkForMatch();
+                });
+            });
+        }
+
+        function checkForMatch() {
+            if (selectedDefinition && selectedExplanation) {
+                attempts++;
+                
+                if (correctAnswers[selectedDefinition] === selectedExplanation) {
+                    // Correct match
+                    const defItem = document.querySelector(`.definitions .item[data-id="${selectedDefinition}"]`);
+                    const expItem = document.querySelector(`.explanations .item[data-id="${selectedExplanation}"]`);
+                    
+                    defItem.classList.remove('selected');
+                    expItem.classList.remove('selected');
+                    defItem.classList.add('matched');
+                    expItem.classList.add('matched');
+                    
+                    matched++;
+                    points += 10;
+                    
+                    // Check if game is completed
+                    if (matched === 10) {
+                        setTimeout(() => {
+                            alert(`🎉 Congratulations! You completed the game!\n\nResults:\n✅ Matched: ${matched}/10\n🎯 Attempts: ${attempts}\n⭐ Points: ${points}`);
+                        }, 500);
+                    }
+                } else {
+                    // Incorrect match
+                    const defItem = document.querySelector(`.definitions .item[data-id="${selectedDefinition}"]`);
+                    const expItem = document.querySelector(`.explanations .item[data-id="${selectedExplanation}"]`);
+                    
+                    defItem.classList.add('wrong');
+                    expItem.classList.add('wrong');
+                    points = Math.max(0, points - 5);
+                    
+                    setTimeout(() => {
+                        defItem.classList.remove('selected', 'wrong');
+                        expItem.classList.remove('selected', 'wrong');
+                    }, 1000);
+                }
+                
+                selectedDefinition = null;
+                selectedExplanation = null;
+                updateScore();
+            }
+        }
+
+        function updateScore() {
+            document.getElementById('matched').textContent = matched;
+            document.getElementById('attempts').textContent = attempts;
+            document.getElementById('points').textContent = points;
+        }
+
+        function resetGame() {
+            // Reset variables
+            selectedDefinition = null;
+            selectedExplanation = null;
+            matched = 0;
+            attempts = 0;
+            points = 100;
+            
+            // Shuffle definitions again
+            generateExplanations();
+            
+            // Reset CSS classes
+            document.querySelectorAll('.item').forEach(item => {
+                item.classList.remove('selected', 'matched', 'wrong');
+            });
+            
+            // Re-add event listeners for new elements
+            addEventListeners();
+            
+            // Hide answers
+            document.getElementById('answerKey').style.display = 'none';
+            
+            updateScore();
+        }
+
+        function showAnswers() {
+            const answerKey = document.getElementById('answerKey');
+            answerKey.style.display = answerKey.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showAuthorInfo() {
+            document.getElementById('authorModal').style.display = 'block';
+        }
+
+        function closeAuthorModal() {
+            document.getElementById('authorModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('authorModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

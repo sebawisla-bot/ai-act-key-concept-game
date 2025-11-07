@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="copyright" content="© 2025 Sebastian Wisła">
+    <meta name="license" content="CC BY-NC 4.0">
+    <meta name="robots" content="noai, noimageai">
+    <title>Jeu d'association - AI Act : Concepts clés et définitions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .game-area {
+            display: flex;
+            gap: 30px;
+            padding: 30px;
+            min-height: 600px;
+        }
+
+        .definitions, .explanations {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .definitions h2, .explanations h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-size: 1.3rem;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .item {
+            background: white;
+            margin: 10px 0;
+            padding: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+        }
+
+        .item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            border-color: #3498db;
+        }
+
+        .item.selected {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+        }
+
+        .item.matched {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+            border-color: #27ae60;
+            cursor: default;
+        }
+
+        .item.wrong {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .number {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-right: 8px;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .item.selected .number,
+        .item.matched .number,
+        .item.wrong .number {
+            color: white;
+        }
+
+        .info-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 18px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 5px;
+            cursor: help;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .item.selected .info-icon,
+        .item.matched .info-icon,
+        .item.wrong .info-icon {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .tooltip {
+            visibility: hidden;
+            position: absolute;
+            background-color: #2c3e50;
+            color: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            width: 300px;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -8px;
+            border-width: 8px;
+            border-style: solid;
+            border-color: #2c3e50 transparent transparent transparent;
+        }
+
+        .info-icon:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .tooltip strong {
+            color: #3498db;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .controls {
+            text-align: center;
+            padding: 20px 30px;
+            background: #ecf0f1;
+            border-top: 1px solid #bdc3c7;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .score {
+            background: white;
+            margin: 20px 30px;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .score-item {
+            display: inline-block;
+            margin: 0 20px;
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            color: white;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .answer-key {
+            background: white;
+            margin: 20px 30px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            display: none;
+        }
+
+        .answer-key h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .answer-pair {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 15px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+            font-size: 0.9rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 600px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            animation: slideDown 0.4s ease;
+            position: relative;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 20px;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .modal-content h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .modal-content p {
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .modal-content strong {
+            color: #2c3e50;
+        }
+
+        .modal-content a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .modal-content a:hover {
+            text-decoration: underline;
+        }
+
+        .linkedin-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #0077b5;
+            color: white !important;
+            border-radius: 8px;
+            text-decoration: none !important;
+            transition: all 0.3s ease;
+        }
+
+        .linkedin-link:hover {
+            background: #005885;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 119, 181, 0.3);
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.85em;
+            color: #666;
+            padding: 30px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .item {
+                padding: 12px;
+                font-size: 0.9rem;
+            }
+
+            .modal-content {
+                margin: 10% auto;
+                padding: 20px;
+                max-width: 90%;
+            }
+
+            .btn {
+                margin: 5px;
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+
+            .tooltip {
+                width: 250px;
+                font-size: 0.8rem;
+            }
+
+            .answer-pair {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="text-align: right; padding: 10px;">
+                <a href="pl.html" style="text-decoration: none; font-size: 24px; color: white;">pl</a> <span style="color: white;">|</span> 
+                <a href="index.html" style="text-decoration: none; font-size: 24px; color: white;">en</a> <span style="color: white;">|</span> 
+                <a href="fr.html" style="text-decoration: none; font-size: 24px; color: white;">fr</a>
+            </div>
+            <h1>⚖️ AI Act : Concepts clés</h1>
+            <p>Associez les termes à leurs définitions correspondantes</p>
+        </div>
+
+        <div class="score">
+            <div class="score-item">
+                Associés : <span id="matched">0</span>/10
+            </div>
+            <div class="score-item">
+                Tentatives : <span id="attempts">0</span>
+            </div>
+            <div class="score-item">
+                Points : <span id="points">0</span>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <div class="definitions">
+                <h2>📋 Concepts</h2>
+                <div class="item" data-id="1">
+                    <span class="number">1.</span> Systèmes d'IA à faible risque
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Art. 50 AI Act</strong>Applicable à partir du 2 août 2026</span>
+                    </span>
+                </div>
+                <div class="item" data-id="2">
+                    <span class="number">2.</span> Obligation de divulgation pour les chatbots
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Art. 50 AI Act</strong>Applicable à partir du 2 août 2026</span>
+                    </span>
+                </div>
+                <div class="item" data-id="3">
+                    <span class="number">3.</span> Étiquetage du contenu généré par l'IA
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Art. 50 AI Act</strong>Applicable à partir du 2 août 2026</span>
+                    </span>
+                </div>
+                <div class="item" data-id="4">
+                    <span class="number">4.</span> Détection des médias synthétiques
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Art. 50 AI Act</strong>Applicable à partir du 2 août 2026</span>
+                    </span>
+                </div>
+                <div class="item" data-id="5">
+                    <span class="number">5.</span> Modèles d'IA à usage général (GPAI)
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Art. 3(63) AI Act</strong>Obligations des fournisseurs à partir du 2 août 2025 (échéance antérieure !)</span>
+                    </span>
+                </div>
+                <div class="item" data-id="6">
+                    <span class="number">6.</span> Politique d'utilisation acceptable (AUP)
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Bonne pratique</strong>L'AI Act n'exige pas formellement d'AUP, mais c'est recommandé pour la gestion des risques</span>
+                    </span>
+                </div>
+                <div class="item" data-id="7">
+                    <span class="number">7.</span> Diligence raisonnable envers les fournisseurs d'IA
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Gestion des risques</strong>Dérive des exigences de diligence et de documentation de l'AI Act</span>
+                    </span>
+                </div>
+                <div class="item" data-id="8">
+                    <span class="number">8.</span> Conformité au droit d'auteur dans le contenu IA
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Art. 53 AI Act + droit d'auteur</strong>Transparence des données d'entraînement pour GPAI à partir du 2 août 2025</span>
+                    </span>
+                </div>
+                <div class="item" data-id="9">
+                    <span class="number">9.</span> Formation à la littératie en IA pour les employés
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Bonne pratique</strong>Promue par l'AI Act dans le cadre de la gestion des risques</span>
+                    </span>
+                </div>
+                <div class="item" data-id="10">
+                    <span class="number">10.</span> Inventaire interne des systèmes d'IA
+                    <span class="info-icon">i
+                        <span class="tooltip"><strong>Recommandation</strong>Non obligatoire, mais fortement recommandé pour la conformité et l'auditabilité</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="explanations">
+                <h2>💡 Définitions</h2>
+                <div id="explanationsContainer">
+                    <!-- Les définitions seront insérées ici par JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="resetGame()">🔄 Recommencer</button>
+            <button class="btn" onclick="showAnswers()">📖 Afficher les réponses</button>
+            <button class="btn" onclick="showAuthorInfo()">👤 À propos de l'auteur</button>
+        </div>
+
+        <div class="answer-key" id="answerKey">
+            <h3>🔑 Corrigé</h3>
+            <div class="answer-pair"><span><strong>1. Systèmes d'IA à faible risque</strong></span><span><strong>F.</strong> Systèmes d'intelligence artificielle non classés à haut risque...</span></div>
+            <div class="answer-pair"><span><strong>2. Obligation de divulgation pour les chatbots</strong></span><span><strong>H.</strong> Exigence d'informer les utilisateurs qu'ils interagissent avec un système d'IA...</span></div>
+            <div class="answer-pair"><span><strong>3. Étiquetage du contenu généré par l'IA</strong></span><span><strong>J.</strong> Exigence de marquage clair et visible des textes, images...</span></div>
+            <div class="answer-pair"><span><strong>4. Détection des médias synthétiques</strong></span><span><strong>B.</strong> Mesures techniques et organisationnelles visant à détecter...</span></div>
+            <div class="answer-pair"><span><strong>5. Modèles d'IA à usage général (GPAI)</strong></span><span><strong>D.</strong> Grands modèles de langage et systèmes similaires (par ex., ChatGPT, Gemini)...</span></div>
+            <div class="answer-pair"><span><strong>6. Politique d'utilisation acceptable (AUP)</strong></span><span><strong>I.</strong> Document interne recommandé définissant les méthodes autorisées et interdites...</span></div>
+            <div class="answer-pair"><span><strong>7. Diligence raisonnable envers les fournisseurs d'IA</strong></span><span><strong>A.</strong> Processus d'évaluation des fournisseurs/modèles d'IA (documentation, conformité...)...</span></div>
+            <div class="answer-pair"><span><strong>8. Conformité au droit d'auteur dans le contenu IA</strong></span><span><strong>G.</strong> Obligation de vérifier que l'utilisation des données d'entraînement...</span></div>
+            <div class="answer-pair"><span><strong>9. Formation à la littératie en IA pour les employés</strong></span><span><strong>E.</strong> Formation régulière couvrant les limites des systèmes d'IA...</span></div>
+            <div class="answer-pair"><span><strong>10. Inventaire interne des systèmes d'IA</strong></span><span><strong>C.</strong> Documentation interne décrivant tous les systèmes d'IA utilisés...</span></div>
+        </div>
+
+        <!-- Modal À propos de l'auteur -->
+        <div id="authorModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeAuthorModal()">&times;</span>
+                <h2>👤 À propos de l'auteur</h2>
+                <p><strong>Sebastian Wisła</strong></p>
+                <p>Ce matériel est disponible sous la licence <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.fr" target="_blank">Creative Commons Attribution - Utilisation non commerciale 4.0 International (CC BY-NC 4.0)</a>.</p>
+                <p><strong>Concept et développement :</strong> Sebastian Wisła<br>
+                <strong>Assistance IA :</strong> Claude Sonnet 4.5</p>
+                <a href="https://www.linkedin.com/in/erpandcrm/" target="_blank" class="linkedin-link">
+                    🔗 Profil LinkedIn
+                </a>
+            </div>
+        </div>
+
+        <footer>
+            © 2025 Sebastian Wisła. Ce matériel est disponible sous la licence 
+            <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.fr" target="_blank">Creative Commons Attribution - Utilisation non commerciale 4.0 International (CC BY-NC 4.0)</a>.<br>
+            Concept et développement : <strong>Sebastian Wisła</strong> | Assistance IA : Claude Sonnet 4.5
+        </footer>
+    </div>
+
+    <script>
+        // Réponses correctes
+        const correctAnswers = {
+            '1': 'F',
+            '2': 'H', 
+            '3': 'J',
+            '4': 'B',
+            '5': 'D',
+            '6': 'I',
+            '7': 'A',
+            '8': 'G',
+            '9': 'E',
+            '10': 'C'
+        };
+
+        // Définitions à mélanger
+        const explanationsData = [
+            { id: 'F', text: 'Systèmes d\'intelligence artificielle non classés à haut risque et qui interagissent avec les utilisateurs ou génèrent du contenu (par ex., chatbots de service client, générateurs de textes marketing).' },
+            { id: 'H', text: 'Exigence d\'informer les utilisateurs qu\'ils interagissent avec un système d\'IA (sauf si c\'est évident). S\'applique également aux systèmes de reconnaissance des émotions/biométrie et à certains contenus synthétiques.' },
+            { id: 'J', text: 'Exigence de marquage clair et visible des textes, images, audio ou vidéo créés ou modifiés de manière significative par l\'IA, en particulier lorsque le contenu peut être confondu avec de l\'authentique.' },
+            { id: 'B', text: 'Mesures techniques et organisationnelles visant à détecter, marquer et gérer les risques liés aux matériaux manipulés ou générés par l\'IA (métadonnées, filigranes, processus de vérification).' },
+            { id: 'D', text: 'Grands modèles de langage et systèmes similaires (par ex., ChatGPT, Gemini) dont les fonctions ne sont pas limitées à une seule tâche. Les obligations des fournisseurs entrent en vigueur à partir du 2 août 2025.' },
+            { id: 'I', text: 'Document interne recommandé définissant les méthodes autorisées et interdites d\'utilisation des systèmes d\'IA par les employés. L\'AI Act n\'exige pas formellement cela, mais c\'est une bonne pratique pour la gestion des risques.' },
+            { id: 'A', text: 'Processus d\'évaluation des fournisseurs/modèles d\'IA (documentation, conformité, absence de fonctions interdites). Pratique dérivée des principes de diligence dans la gestion des risques, en particulier pour les systèmes à risque élevé et GPAI.' },
+            { id: 'G', text: 'Obligation de vérifier que l\'utilisation des données d\'entraînement ou du contenu généré ne viole pas les droits d\'auteur. Régie à la fois par le droit d\'auteur et les exigences de transparence de l\'AI Act.' },
+            { id: 'E', text: 'Formation régulière couvrant les limites des systèmes d\'IA, les risques (par ex., hallucinations), la supervision humaine requise et les principes de sécurité et de confidentialité. Élément de bonne pratique de gestion des risques.' },
+            { id: 'C', text: 'Documentation interne décrivant tous les systèmes d\'IA utilisés (fournisseur, version, objectif, catégories de risque, date de déploiement). Fortement recommandé à des fins de conformité et d\'auditabilité.' }
+        ];
+
+        let selectedDefinition = null;
+        let selectedExplanation = null;
+        let matched = 0;
+        let attempts = 0;
+        let points = 100;
+
+        // Fonction de mélange Fisher-Yates
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Fonction pour générer les définitions dans un ordre aléatoire
+        function generateExplanations() {
+            const container = document.getElementById('explanationsContainer');
+            container.innerHTML = '';
+            
+            const shuffled = shuffleArray(explanationsData);
+            
+            shuffled.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.dataset.id = item.id;
+                div.innerHTML = `<span class="number">${item.id}.</span> ${item.text}`;
+                container.appendChild(div);
+            });
+        }
+
+        // Initialisation du jeu
+        document.addEventListener('DOMContentLoaded', function() {
+            generateExplanations();
+            addEventListeners();
+            updateScore();
+        });
+
+        function addEventListeners() {
+            // Définitions
+            document.querySelectorAll('.definitions .item').forEach(item => {
+                item.addEventListener('click', function() {
+                    if (this.classList.contains('matched')) return;
+                    
+                    // Supprimer la sélection précédente des définitions
+                    document.querySelectorAll('.definitions .item').forEach(el => 
+                        el.classList.remove('selected'));
+                    
+                    this.classList.add('selected');
+                    selectedDefinition = this.dataset.id;
+                    
+                    checkForMatch();
+                });
+            });
+
+            // Explications
+            document.querySelectorAll('.explanations .item').forEach(item => {
+                item.addEventListener('click', function() {
+                    if (this.classList.contains('matched')) return;
+                    
+                    // Supprimer la sélection précédente des explications
+                    document.querySelectorAll('.explanations .item').forEach(el => 
+                        el.classList.remove('selected'));
+                    
+                    this.classList.add('selected');
+                    selectedExplanation = this.dataset.id;
+                    
+                    checkForMatch();
+                });
+            });
+        }
+
+        function checkForMatch() {
+            if (selectedDefinition && selectedExplanation) {
+                attempts++;
+                
+                if (correctAnswers[selectedDefinition] === selectedExplanation) {
+                    // Correspondance correcte
+                    const defItem = document.querySelector(`.definitions .item[data-id="${selectedDefinition}"]`);
+                    const expItem = document.querySelector(`.explanations .item[data-id="${selectedExplanation}"]`);
+                    
+                    defItem.classList.remove('selected');
+                    expItem.classList.remove('selected');
+                    defItem.classList.add('matched');
+                    expItem.classList.add('matched');
+                    
+                    matched++;
+                    points += 10;
+                    
+                    // Vérifier si le jeu est terminé
+                    if (matched === 10) {
+                        setTimeout(() => {
+                            alert(`🎉 Félicitations ! Vous avez terminé le jeu !\n\nRésultats :\n✅ Associés : ${matched}/10\n🎯 Tentatives : ${attempts}\n⭐ Points : ${points}`);
+                        }, 500);
+                    }
+                } else {
+                    // Correspondance incorrecte
+                    const defItem = document.querySelector(`.definitions .item[data-id="${selectedDefinition}"]`);
+                    const expItem = document.querySelector(`.explanations .item[data-id="${selectedExplanation}"]`);
+                    
+                    defItem.classList.add('wrong');
+                    expItem.classList.add('wrong');
+                    points = Math.max(0, points - 5);
+                    
+                    setTimeout(() => {
+                        defItem.classList.remove('selected', 'wrong');
+                        expItem.classList.remove('selected', 'wrong');
+                    }, 1000);
+                }
+                
+                selectedDefinition = null;
+                selectedExplanation = null;
+                updateScore();
+            }
+        }
+
+        function updateScore() {
+            document.getElementById('matched').textContent = matched;
+            document.getElementById('attempts').textContent = attempts;
+            document.getElementById('points').textContent = points;
+        }
+
+        function resetGame() {
+            // Réinitialiser les variables
+            selectedDefinition = null;
+            selectedExplanation = null;
+            matched = 0;
+            attempts = 0;
+            points = 100;
+            
+            // Mélanger à nouveau les définitions
+            generateExplanations();
+            
+            // Réinitialiser les classes CSS
+            document.querySelectorAll('.item').forEach(item => {
+                item.classList.remove('selected', 'matched', 'wrong');
+            });
+            
+            // Rajouter les écouteurs d'événements pour les nouveaux éléments
+            addEventListeners();
+            
+            // Masquer les réponses
+            document.getElementById('answerKey').style.display = 'none';
+            
+            updateScore();
+        }
+
+        function showAnswers() {
+            const answerKey = document.getElementById('answerKey');
+            answerKey.style.display = answerKey.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showAuthorInfo() {
+            document.getElementById('authorModal').style.display = 'block';
+        }
+
+        function closeAuthorModal() {
+            document.getElementById('authorModal').style.display = 'none';
+        }
+
+        // Fermer le modal en cliquant en dehors
+        window.onclick = function(event) {
+            const modal = document.getElementById('authorModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
